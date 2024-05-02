@@ -10,73 +10,72 @@ import {NotificationModule} from "../modules/notification/notification.module";
 import {FollowModule} from "../modules/follow/follow.module";
 import {RoomChatModule} from "../modules/room-chat/room-chat.module";
 import {ProfileModule} from "../modules/profile/profile.module";
+import {IModuleData} from "./interfaces/module-data.interface";
 
 const MODULE_PATH_PREFIX = "api";
 
-const moduleRoutesConfigurations = {
-    "root": {
+const MODULES_DATA: IModuleData[] = [
+    {
+        module: AppModule,
         path: `${MODULE_PATH_PREFIX}`,
-        title: "App Module"
+        title: "App Module",
+        tags: ""
     },
-    "auth": {
+    {
+        module: AuthModule,
         path: `${MODULE_PATH_PREFIX}/auth`,
-        title: "Auth Module"
+        title: "Auth Module",
+        tags: "",
     },
-    "profile": {
+    {
+        module: ProfileModule,
         path: `${MODULE_PATH_PREFIX}/profile`,
-        title: "Profile Module"
+        title: "Profile Module",
+        tags: "",
     },
-    "gallery": {
+    {
+        module: GalleryModule,
         path: `${MODULE_PATH_PREFIX}/gallery`,
-        title: "Gallery Module"
+        title: "Gallery Module",
+        tags: "",
     },
-    "comment": {
+    {
+        module: CommentModule,
         path: `${MODULE_PATH_PREFIX}/comment`,
-        title: "Comment Module"
+        title: "Comment Module",
+        tags: "",
     },
-    "favorite": {
+    {
+        module: FavoriteModule,
         path: `${MODULE_PATH_PREFIX}/favorite`,
-        title: "Favorite Module"
+        title: "Favorite Module",
+        tags: "",
     },
-    "follow": {
+    {
+        module: FollowModule,
         path: `${MODULE_PATH_PREFIX}/follow`,
-        title: "Follow Module"
+        title: "Follow Module",
+        tags: "",
     },
-    "notification": {
+    {
+        module: NotificationModule,
         path: `${MODULE_PATH_PREFIX}/notification`,
-        title: "Notification Module"
+        title: "Notification Module",
+        tags: "",
     },
-    "personalChat": {
+    {
+        module: PersonalChatModule,
         path: `${MODULE_PATH_PREFIX}/personal-chat`,
-        title: "Personal Chat Module"
+        title: "Personal Chat Module",
+        tags: "",
     },
-    "roomChat": {
+    {
+        module: RoomChatModule,
         path: `${MODULE_PATH_PREFIX}/room-chat`,
-        title: "Room Chat Module"
-    }
-};
-
-const generateLinksTemplate = (urlsInfo, baseUrl) => {
-    let linksTemplate = `<div style="padding: 10px">`;
-
-    for (const value of Object.values(urlsInfo)) {
-        const {path, title} = value as Record<string, any>;
-        linksTemplate += `
-            <p>
-                <a href="${baseUrl}/${path}" style="text-decoration: none">
-                    ${title}
-                </a>
-            </p>`;
-    }
-
-    linksTemplate += `</div>`;
-    return linksTemplate;
-};
-
-const buildModuleDocument = (module, path, title, description, tags) => {
-    const config = buildDocument({title, description, tags});
-    return {module, path, config};
-};
+        title: "Room Chat Module",
+        tags: "",
+    },
+];
 
 const buildDocument = (data) => {
     const {title, description, tags} = data;
@@ -95,43 +94,49 @@ const buildDocument = (data) => {
         .build();
 };
 
+
+const buildModuleDocument = (module, path, title, description, tags) => {
+    const config = buildDocument({title, description, tags});
+    return {module, path, config};
+};
+
 const generateDocs = (app, modules) => {
     for (const module of modules) {
         const document = SwaggerModule.createDocument(app, module.config, {
             include: [module.module]
         });
+
         SwaggerModule.setup(module.path, app, document);
     }
 };
 
-const swaggerOptionsInit = (app: NestExpressApplication, baseUrl: string) => {
-    const linksTemplate = generateLinksTemplate(moduleRoutesConfigurations, baseUrl);
-    const {
-        root,
-        auth,
-        profile,
-        favorite,
-        comment,
-        follow,
-        gallery,
-        notification,
-        personalChat,
-        roomChat
-    } = moduleRoutesConfigurations;
-    const modules = [
-        buildModuleDocument(AppModule, root.path, root.title, linksTemplate, ""),
-        buildModuleDocument(AuthModule, auth.path, auth.title, linksTemplate, ""),
-        buildModuleDocument(ProfileModule, profile.path, profile.title, linksTemplate, ""),
-        buildModuleDocument(GalleryModule, gallery.path, gallery.title, linksTemplate, ""),
-        buildModuleDocument(CommentModule, comment.path, comment.title, linksTemplate, ""),
-        buildModuleDocument(FavoriteModule, favorite.path, favorite.title, linksTemplate, ""),
-        buildModuleDocument(FollowModule, follow.path, follow.title, linksTemplate, ""),
-        buildModuleDocument(NotificationModule, notification.path, notification.title, linksTemplate, ""),
-        buildModuleDocument(PersonalChatModule, personalChat.path, personalChat.title, linksTemplate, ""),
-        buildModuleDocument(RoomChatModule, roomChat.path, roomChat.title, linksTemplate, "")
-    ];
+const generateLinksTemplate = (baseUrl: string) => {
+    let linksTemplate = `<div style="padding: 10px">`;
 
+    for (const value of Object.values(MODULES_DATA)) {
+        const {path, title} = value as IModuleData;
+        linksTemplate += `
+            <p>
+                <a href="${baseUrl}/${path}" style="text-decoration: none">
+                    ${title}
+                </a>
+            </p>`;
+    }
+
+    linksTemplate += `</div>`;
+    return linksTemplate;
+};
+
+const swaggerOptionsInit = (app: NestExpressApplication, baseUrl: string) => {
+    const linksTemplate = generateLinksTemplate(baseUrl);
+    const modules = MODULES_DATA.map((moduleData: IModuleData) => {
+        const {module, path, title, tags} = moduleData;
+        return buildModuleDocument(module, path, title, linksTemplate, tags)
+    });
     generateDocs(app, modules);
 };
 
+
 export default swaggerOptionsInit;
+
+
